@@ -37,6 +37,7 @@ import {
   UserCheck,
   UserX,
 } from 'lucide-react';
+import { QRCodeDialog } from '@/components/attendees/QRCodeDialog';
 
 const statusConfig: Record<AttendeeStatus, { label: string; className: string }> = {
   registered: { label: 'Registered', className: 'bg-primary/20 text-primary' },
@@ -48,6 +49,8 @@ export default function Attendees() {
   const [selectedEvent, setSelectedEvent] = useState(mockEvents[0].id);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<AttendeeStatus | 'all'>('all');
+  const [selectedAttendee, setSelectedAttendee] = useState<Attendee | null>(null);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
 
   const filteredAttendees = mockAttendees
     .filter((a) => a.eventId === selectedEvent)
@@ -64,6 +67,11 @@ export default function Attendees() {
     checkedIn: mockAttendees.filter((a) => a.eventId === selectedEvent && a.status === 'checked-in').length,
     registered: mockAttendees.filter((a) => a.eventId === selectedEvent && a.status === 'registered').length,
     cancelled: mockAttendees.filter((a) => a.eventId === selectedEvent && a.status === 'cancelled').length,
+  };
+
+  const handleViewQR = (attendee: Attendee) => {
+    setSelectedAttendee(attendee);
+    setQrDialogOpen(true);
   };
 
   return (
@@ -161,7 +169,7 @@ export default function Attendees() {
             </TableHeader>
             <TableBody>
               {filteredAttendees.map((attendee, index) => (
-                <AttendeeRow key={attendee.id} attendee={attendee} index={index} />
+                <AttendeeRow key={attendee.id} attendee={attendee} index={index} onViewQR={handleViewQR} />
               ))}
             </TableBody>
           </Table>
@@ -172,6 +180,12 @@ export default function Attendees() {
             </div>
           )}
         </div>
+
+        <QRCodeDialog
+          attendee={selectedAttendee}
+          open={qrDialogOpen}
+          onOpenChange={setQrDialogOpen}
+        />
       </div>
     </AppLayout>
   );
@@ -194,7 +208,7 @@ function StatBadge({ label, value, color }: { label: string; value: number; colo
   );
 }
 
-function AttendeeRow({ attendee, index }: { attendee: Attendee; index: number }) {
+function AttendeeRow({ attendee, index, onViewQR }: { attendee: Attendee; index: number; onViewQR: (attendee: Attendee) => void }) {
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
@@ -226,7 +240,7 @@ function AttendeeRow({ attendee, index }: { attendee: Attendee; index: number })
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onViewQR(attendee)}>
               <QrCode className="w-4 h-4 mr-2" />
               View QR Code
             </DropdownMenuItem>
