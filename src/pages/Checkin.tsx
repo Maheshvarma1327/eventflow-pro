@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
-import { mockAttendees, mockEvents } from '@/data/mockData';
+import { mockAttendees, mockEvents, Attendee } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,12 +22,18 @@ import {
   Clock,
   TrendingUp,
   Scan,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
+import { QRScanner } from '@/components/checkin/QRScanner';
+import { toast } from 'sonner';
 
 export default function Checkin() {
   const [selectedEvent, setSelectedEvent] = useState(mockEvents[0].id);
   const [searchQuery, setSearchQuery] = useState('');
   const [scanMode, setScanMode] = useState(false);
+  const [lastScannedAttendee, setLastScannedAttendee] = useState<Attendee | null>(null);
+  const [scanResult, setScanResult] = useState<'success' | 'error' | null>(null);
 
   const eventAttendees = mockAttendees.filter((a) => a.eventId === selectedEvent);
   const checkedInCount = eventAttendees.filter((a) => a.status === 'checked-in').length;
@@ -46,6 +52,41 @@ export default function Checkin() {
     .filter((a) => a.status === 'checked-in')
     .sort((a, b) => new Date(b.checkedInAt!).getTime() - new Date(a.checkedInAt!).getTime())
     .slice(0, 5);
+
+  const handleQRScan = (data: string) => {
+    try {
+      const scannedData = JSON.parse(data);
+      const attendee = mockAttendees.find(
+        (a) => a.id === scannedData.id && a.eventId === selectedEvent
+      );
+
+      if (attendee) {
+        if (attendee.status === 'checked-in') {
+          setLastScannedAttendee(attendee);
+          setScanResult('error');
+          toast.error(`${attendee.name} is already checked in!`);
+        } else {
+          setLastScannedAttendee(attendee);
+          setScanResult('success');
+          toast.success(`${attendee.name} checked in successfully!`);
+        }
+      } else {
+        setScanResult('error');
+        setLastScannedAttendee(null);
+        toast.error('Invalid QR code or attendee not registered for this event');
+      }
+
+      // Reset scan result after 3 seconds
+      setTimeout(() => {
+        setScanResult(null);
+        setLastScannedAttendee(null);
+      }, 3000);
+    } catch {
+      setScanResult('error');
+      toast.error('Invalid QR code format');
+      setTimeout(() => setScanResult(null), 3000);
+    }
+  };
 
   return (
     <AppLayout>
@@ -143,10 +184,50 @@ export default function Checkin() {
 
             {/* QR Scan Area */}
             {scanMode && (
+              <div className="mb-4">
+                <QRScanner
+                  isActive={scanMode}
+                  onScan={handleQRScan}
+                  onError={(error) => console.error('Scanner error:', error)}
+                />
+                
+                {/* Scan Result Feedback */}
+                {scanResult && (
+                  <div
+                    className={cn(
+                      'mt-4 p-4 rounded-xl flex items-center gap-3 animate-fade-in',
+                      scanResult === 'success'
+                        ? 'bg-success/10 border border-success/30'
+                        : 'bg-destructive/10 border border-destructive/30'
+                    )}
+                  >
+                    {scanResult === 'success' ? (
+                      <CheckCircle2 className="w-6 h-6 text-success" />
+                    ) : (
+                      <XCircle className="w-6 h-6 text-destructive" />
+                    )}
+                    <div>
+                      {lastScannedAttendee ? (
+                        <>
+                          <p className="font-medium text-foreground">{lastScannedAttendee.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {scanResult === 'success' ? 'Checked in successfully' : 'Already checked in'}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="font-medium text-destructive">Invalid ticket</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {!scanMode && (
               <div className="mb-4 p-8 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 text-center">
-                <QrCode className="w-12 h-12 mx-auto mb-3 text-primary animate-pulse" />
+                <QrCode className="w-12 h-12 mx-auto mb-3 text-primary" />
                 <p className="text-sm text-muted-foreground">
-                  Position QR code in front of camera to scan
+                  Click "Start Scanning" to activate the camera
                 </p>
               </div>
             )}

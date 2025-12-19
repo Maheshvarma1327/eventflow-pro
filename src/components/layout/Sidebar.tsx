@@ -12,9 +12,9 @@ import {
   MessageSquare,
   Settings,
   ChevronLeft,
-  Sparkles,
 } from 'lucide-react';
 import { useState } from 'react';
+import ventureMondLogo from '@/assets/venture-mond-logo.jpeg';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -46,11 +46,13 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
         <Link to="/" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shadow-glow">
-            <Sparkles className="w-5 h-5 text-primary-foreground" />
-          </div>
+          <img
+            src={ventureMondLogo}
+            alt="Venture Mond"
+            className="w-8 h-8 rounded-lg object-cover"
+          />
           {!collapsed && (
-            <span className="font-semibold text-lg text-foreground">EventFlow</span>
+            <span className="font-semibold text-lg text-foreground">Venture Mond</span>
           )}
         </Link>
         <button
