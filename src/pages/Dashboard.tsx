@@ -16,7 +16,7 @@ import {
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
-const Index = () => {
+const Dashboard = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const upcomingEvents = mockEvents.filter(e => e.status === 'published');
@@ -189,4 +189,4 @@ const recentActivities: ActivityItemProps[] = [
   { action: 'New registration', event: 'AI & ML Summit', time: '2 hours ago', type: 'registration' },
 ];
 
-export default Index;
+export default Dashboard;

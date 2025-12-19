@@ -17,7 +17,7 @@ import { useState } from 'react';
 import ventureMondLogo from '@/assets/venture-mond-logo.jpeg';
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Events', href: '/events', icon: Calendar },
   { name: 'Agenda', href: '/agenda', icon: CalendarDays },
   { name: 'Venues', href: '/venues', icon: MapPin },
@@ -45,14 +45,12 @@ export function Sidebar() {
     >
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
-        <Link to="/" className="flex items-center gap-3">
-          <img
-            src={ventureMondLogo}
-            alt="Venture Mond"
-            className="w-8 h-8 rounded-lg object-cover"
-          />
+        <Link to="/dashboard" className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold font-['Orbitron']">
+            N
+          </div>
           {!collapsed && (
-            <span className="font-semibold text-lg text-foreground">Venture Mond</span>
+            <span className="font-bold text-lg text-foreground tracking-wide font-['Orbitron']">NEXUS</span>
           )}
         </Link>
         <button
